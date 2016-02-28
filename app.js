@@ -20,7 +20,7 @@ Cylon.robot({
     sound: { driver: 'analogSensor',  pin: 2, connection: 'edison' },
     tempSensor: {driver: 'upm-grovetemp', pin: 1, connection: 'edison'},
     screen: { driver: 'upm-jhd1313m1', connection: 'edison'},
-
+    touch: { driver: 'button', pin: 8, connection: 'edison'}
   },
   temp: 0,
   writeMessage: function(message, r, g, b) {
@@ -39,21 +39,29 @@ Cylon.robot({
     var oldVal = val;
     if (val >= 450 && that.isEnabled) {
       if (val > 1000) val = 1000;
-      var multiplier = (val - 450) / 500;
-      var red = Math.round(multiplier * 255);
-      var green = Math.round((1 - multiplier) * 255);
-      var blue = Math.round((1 - multiplier) * 255);
+      if (val < 667) {
+        that.writeMessage("Baby is waking", 255, 255, 0);
+      } else if (val < 834) {
+        that.writeMessage("BABY IS ANGRY!!", 255, 165, 0);
+      } else if (val <= 1000) {
+        that.writeMessage("RUUUUNNN!!", 100, 0, 0);
+      }
+
       that.led.turnOn();
-      that.writeMessage("BABY IS CRYING", red, green, blue);
-      socket.emit('cry', {'temp': that.temp ,'reason': 'crying', 'threshold': oldVal});
+      // that.writeMessage("BABY IS CRYING", red, green, blue);
+      socket.emit('cry', {'temp': that.temp, 'reason': 'Crying', 'threshold': oldVal});
       that.isEnabled = false;
       setTimeout(function() {
         that.reset();
       }, 500);
       setTimeout(function() {
         that.isEnabled = true;
-      }, 5000);
+      }, 3000);
     }
+  },
+  parentNeeded: function() {
+    socket.emit('cry', {'temp': this.temp, 'reason': 'Parent Needed!', 'threshold': 0});
+    this.writeMessage('Parent Needed!', 255, 0, 255);
   },
   reset: function() {
     this.led.turnOff();
@@ -63,12 +71,16 @@ Cylon.robot({
       my.detectSound(val);
     });
 
+    my.touch.on('push', function() {
+      my.parentNeeded();
+    });
+
     setInterval(function() {
       my.temp = my.tempSensor.value();
       if (my.temp >= 25) {
         socket.emit('cry', {'temp': my.temp, 'reason': 'TOO HOT', 'threshold': 0});
       }
-      my.writeMessage(my.temp);
+      my.writeMessage(my.temp.toString() + ' C');
     }, 5000);
   }
 });
