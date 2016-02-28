@@ -1,0 +1,16 @@
+{
+  "name": "baby-monitor-edison",
+  "version": "1.0.0",
+  "description": "Baby monitor",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dtrailin/baby-monitor-edison.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dtrailin/baby-monitor-edison/issues"
+  },
+  "homepage": "https://github.com/dtrailin/baby-monitor-edison#readme"
+}
