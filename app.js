@@ -18,8 +18,11 @@ Cylon.robot({
   devices: {
     led: { driver: 'led', pin: 13 },
     sound: { driver: 'analogSensor',  pin: 2, connection: 'edison' },
-    screen: { driver: 'upm-jhd1313m1', connection: 'edison'}
+    tempSensor: {driver: 'upm-grovetemp', pin: 1, connection: 'edison'},
+    screen: { driver: 'upm-jhd1313m1', connection: 'edison'},
+
   },
+  temp: 0,
   writeMessage: function(message, r, g, b) {
     var str = message.toString();
     while (str.length < 16) {
@@ -27,7 +30,7 @@ Cylon.robot({
     }
     this.screen.setCursor(0, 0);
     this.screen.write(str);
-    console.log(r + ' ' + g + ' ' + b);
+    if (r == undefined || g == undefined || b == undefined) return;
     this.screen.setColor(r, g, b);
   },
   detectSound: function(val) {
@@ -41,7 +44,7 @@ Cylon.robot({
       that.led.turnOn();
       that.writeMessage("BABY IS CRYING", red, green, blue);
       if (!that.hasEmitted) {
-        socket.emit('cry', 'Baby is crying.');
+        socket.emit('cry', {"temp": that.temp ,"reason":"crying" });
       }
       setTimeout(function() {
         that.reset();
@@ -55,5 +58,10 @@ Cylon.robot({
     my.sound.on('analogRead', function(val) {
       my.detectSound(val);
     });
+
+    setInterval(function() {
+      my.temp = my.tempSensor.value();
+      my.writeMessage(my.temp);
+    }, 5000);
   }
 });
