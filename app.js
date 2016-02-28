@@ -33,9 +33,11 @@ Cylon.robot({
     if (r == undefined || g == undefined || b == undefined) return;
     this.screen.setColor(r, g, b);
   },
+  isEnabled: true,
   detectSound: function(val) {
     var that = this;
-    if (val >= 450) {
+    var oldVal = val;
+    if (val >= 450 && that.isEnabled) {
       if (val > 1000) val = 1000;
       var multiplier = (val - 450) / 500;
       var red = Math.round(multiplier * 255);
@@ -43,12 +45,14 @@ Cylon.robot({
       var blue = Math.round((1 - multiplier) * 255);
       that.led.turnOn();
       that.writeMessage("BABY IS CRYING", red, green, blue);
-      if (!that.hasEmitted) {
-        socket.emit('cry', {"temp": that.temp ,"reason":"crying" });
-      }
+      socket.emit('cry', {'temp': that.temp ,'reason': 'crying', 'threshold': oldVal});
+      that.isEnabled = false;
       setTimeout(function() {
         that.reset();
       }, 500);
+      setTimeout(function() {
+        that.isEnabled = true;
+      }, 5000);
     }
   },
   reset: function() {
@@ -61,6 +65,9 @@ Cylon.robot({
 
     setInterval(function() {
       my.temp = my.tempSensor.value();
+      if (my.temp >= 25) {
+        socket.emit('cry', {'temp': my.temp, 'reason': 'TOO HOT', 'threshold': 0});
+      }
       my.writeMessage(my.temp);
     }, 5000);
   }
