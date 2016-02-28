@@ -12,5 +12,11 @@
   "bugs": {
     "url": "https://github.com/dtrailin/baby-monitor-edison/issues"
   },
-  "homepage": "https://github.com/dtrailin/baby-monitor-edison#readme"
+  "homepage": "https://github.com/dtrailin/baby-monitor-edison#readme",
+  "dependencies": {
+    "cylon": "^1.2.0",
+    "cylon-gpio": "^0.27.0",
+    "cylon-i2c": "^0.24.0",
+    "cylon-intel-iot": "^0.8.1"
+  }
 }
